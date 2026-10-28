@@ -1,0 +1,13 @@
+#EXTM3U
+#EXTINF:-1 group-title="Teste",Teste 1 - Ao vivo Akamai A
+https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
+#EXTINF:-1 group-title="Teste",Teste 2 - Ao vivo Akamai B
+https://moctobpltc-i.akamaihd.net/hls/live/571329/eight/playlist.m3u8
+#EXTINF:-1 group-title="Teste",Teste 3 - Apple BipBop
+https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
+#EXTINF:-1 group-title="Teste",Teste 4 - Tears of Steel
+https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8
+#EXTINF:-1 group-title="Teste",Teste 5 - Skip Armstrong
+http://d3rlna7iyyu8wu.cloudfront.net/skip_armstrong/skip_armstrong_stereo_subs.m3u8
+#EXTINF:-1 group-title="Teste",Teste 6 - Azure Promo
+http://amssamples.streaming.mediaservices.windows.net/91492735-c523-432b-ba01-faba6c2206a2/AzureMediaServicesPromo.ism/manifest(format=m3u8-aapl)
