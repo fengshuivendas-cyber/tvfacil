@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nome da lista (ex.: Principal)"
+            android:inputType="textCapSentences"
+            android:singleLine="true"
+            android:textSize="22sp" />
+
+        <RadioGroup
+            android:id="@+id/rgType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/rbM3u"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Tenho um link da lista (M3U)"
+                android:textSize="22sp" />
+
+            <RadioButton
+                android:id="@+id/rbXtream"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tenho servidor, usuário e senha"
+                android:textSize="22sp" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/boxM3u"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/etUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Link (http://...)"
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:textSize="22sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/boxX"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/etServer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Servidor (ex.: http://exemplo.com:8080)"
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:textSize="22sp" />
+
+            <EditText
+                android:id="@+id/etUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Usuário"
+                android:inputType="textNoSuggestions"
+                android:singleLine="true"
+                android:textSize="22sp" />
+
+            <EditText
+                android:id="@+id/etPass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Senha"
+                android:inputType="textNoSuggestions"
+                android:singleLine="true"
+                android:textSize="22sp" />
+
+            <CheckBox
+                android:id="@+id/cbHls"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Usar formato HLS (m3u8) – só se os canais não abrirem"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TV Fácil – Configuração</title>
+<style>
+  :root { --bg:#10161c; --card:#1b252e; --fg:#f2f5f7; --mut:#9fb0bd; --acc:#ffc107; --bad:#e5534b; --line:#2c3a46; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px 16px 80px; background:var(--bg); color:var(--fg);
+         font:18px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; max-width:720px; margin-inline:auto; }
+  h1 { font-size:26px; margin:8px 0 4px; }
+  h2 { font-size:21px; margin:0 0 6px; color:var(--acc); }
+  p, .hint { color:var(--mut); margin:6px 0 12px; }
+  section { background:var(--card); border-radius:14px; padding:16px; margin:18px 0; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:12px; margin:10px 0; }
+  .card.active { border-color:var(--acc); }
+  .title { font-weight:700; font-size:19px; }
+  .tag { background:var(--acc); color:#000; border-radius:8px; padding:1px 8px; margin-left:8px; font-size:14px; font-weight:700; }
+  .status { color:var(--mut); font-size:15px; margin:2px 0 8px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  button { font:inherit; font-weight:600; border:0; border-radius:10px; padding:11px 16px; background:#37474f; color:#fff; cursor:pointer; }
+  button.main { background:var(--acc); color:#000; }
+  button.danger { background:transparent; border:1px solid var(--bad); color:var(--bad); }
+  input, select { font:inherit; width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
+                  background:#0e141a; color:var(--fg); margin:5px 0; }
+  .row input { width:96px; margin:0; text-align:center; font-size:20px; font-weight:700; }
+  label.chk { display:flex; gap:8px; align-items:flex-start; color:var(--mut); font-size:15px; margin:8px 0; }
+  label.chk input { width:auto; margin-top:4px; }
+  .chan { border-top:1px solid var(--line); padding:10px 0; }
+  .chan:first-child { border-top:0; }
+  .cname { font-weight:600; margin-bottom:6px; word-break:break-word; }
+  .cname small { display:block; color:var(--mut); font-weight:400; font-size:14px; }
+  #banner { position:fixed; left:0; right:0; bottom:0; background:var(--bad); color:#fff; padding:12px 16px; text-align:center; display:none; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>TV Fácil</h1>
+  <p>Digite o <b>código de 6 números</b> que aparece na tela da TV.</p>
+  <input id="pin" inputmode="numeric" maxlength="6" placeholder="Código da TV" autocomplete="off">
+  <button class="main" id="btnLogin">Entrar</button>
+  <p id="loginErr" style="color:var(--bad)"></p>
+</div>
+
+<div id="app" hidden>
+  <h1>TV Fácil</h1>
+  <p>Configuração feita aqui no celular. Tudo é salvo na TV.</p>
+
+  <section>
+    <h2>1. Listas de canais</h2>
+    <div id="lists"></div>
+
+    <h3 style="margin:18px 0 4px">Adicionar uma lista</h3>
+    <input id="lname" placeholder="Nome (ex.: Principal)">
+    <select id="type">
+      <option value="m3u">Tenho um link da lista (M3U)</option>
+      <option value="xtream">Tenho servidor, usuário e senha</option>
+    </select>
+    <div id="boxM3u">
+      <input id="url" placeholder="Link da lista (http://...)" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div id="boxX" hidden>
+      <input id="server" placeholder="Servidor (ex.: http://exemplo.com:8080)" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <input id="user" placeholder="Usuário" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <input id="pass" placeholder="Senha" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <label class="chk"><input type="checkbox" id="hls"> Usar formato HLS (m3u8) — marque só se os canais não abrirem</label>
+    </div>
+    <button class="main" id="btnAdd" style="margin-top:8px">Adicionar lista</button>
+  </section>
+
+  <section>
+    <h2>2. Meus canais (os números que seus pais digitam)</h2>
+    <p>Procure o canal pelo nome e dê a ele o número que eles já conhecem (ex.: Globo = 4).
+       Com isso, as teclas CH+ e CH- passam só pelos canais escolhidos aqui.
+       Os demais canais continuam disponíveis, a partir do número 1000.</p>
+
+    <div id="favs"></div>
+
+    <h3 style="margin:18px 0 4px">Buscar canal</h3>
+    <input id="q" placeholder="Digite parte do nome… ex.: globo" autocomplete="off" autocapitalize="off">
+    <div id="results"></div>
+  </section>
+</div>
+
+<div id="banner"></div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  let PIN = sessionStorage.getItem('pin') || '';
+  let state = null;
+  let timer = null;
+
+  // cria elementos sem usar innerHTML (nomes de canais podem ter qualquer texto)
+  function h(tag, attrs, ...kids) {
+    const e = document.createElement(tag);
+    for (const k in (attrs || {})) {
+      if (k === 'onclick') e.onclick = attrs[k];
+      else if (k === 'class') e.className = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) e.append(c);
+    return e;
+  }
+
+  async function api(path, body) {
+    const opt = { headers: { 'X-Pin': PIN } };
+    if (body !== undefined) {
+      opt.method = 'POST';
+      opt.headers['Content-Type'] = 'application/json';
+      opt.body = JSON.stringify(body);
+    }
+    let r;
+    try { r = await fetch(path, opt); } catch (e) { throw new Error('offline'); }
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) {
+      let m = '';
+      try { m = (await r.json()).error; } catch (_) {}
+      throw new Error(m || ('Erro ' + r.status));
+    }
+    return r.json();
+  }
+
+  function banner(msg) {
+    const b = $('#banner');
+    b.textContent = msg || '';
+    b.style.display = msg ? 'block' : 'none';
+  }
+
+  function showLogin(msg) {
+    $('#app').hidden = true;
+    $('#login').hidden = false;
+    $('#loginErr').textContent = msg || '';
+  }
+
+  function fail(e) {
+    if (e.message === 'auth') { sessionStorage.removeItem('pin'); showLogin('Código incorreto. Veja o código na TV.'); }
+    else if (e.message === 'offline') banner('Sem conexão com a TV. Deixe a tela "Configurar listas" aberta na TV.');
+    else alert(e.message);
+  }
+
+  async function loadState() {
+    state = await api('/api/state');
+    banner('');
+    $('#login').hidden = true;
+    $('#app').hidden = false;
+    renderLists();
+    renderFavs();
+    clearTimeout(timer);
+    if (state.lists.some(l => l.busy)) timer = setTimeout(() => loadState().catch(fail), 2000);
+  }
+
+  async function act(path, body) {
+    try { await api(path, body); await loadState(); } catch (e) { fail(e); }
+  }
+
+  // ---------- listas ----------
+  function renderLists() {
+    const box = $('#lists');
+    box.textContent = '';
+    if (!state.lists.length) box.append(h('p', {}, 'Nenhuma lista ainda. Adicione uma abaixo.'));
+    for (const l of state.lists) {
+      box.append(h('div', { class: 'card' + (l.active ? ' active' : '') },
+        h('div', { class: 'title' }, l.name, l.active ? h('span', { class: 'tag' }, 'em uso') : null),
+        h('div', { class: 'status' }, l.status),
+        h('div', { class: 'row' },
+          l.active ? null : h('button', { onclick: () => act('/api/lists/active', { id: l.id }) }, 'Usar esta'),
+          h('button', { onclick: () => act('/api/lists/refresh', { id: l.id }) }, 'Atualizar'),
+          h('button', { class: 'danger', onclick: () => { if (confirm('Excluir a lista "' + l.name + '"?')) act('/api/lists/delete', { id: l.id }); } }, 'Excluir')
+        )));
+    }
+  }
+
+  $('#type').onchange = () => {
+    const x = $('#type').value === 'xtream';
+    $('#boxM3u').hidden = x;
+    $('#boxX').hidden = !x;
+  };
+
+  $('#btnAdd').onclick = async () => {
+    const type = $('#type').value;
+    const body = {
+      name: $('#lname').value.trim() || ('Lista ' + (state.lists.length + 1)),
+      type: type,
+      url: $('#url').value.trim(),
+      server: $('#server').value.trim(),
+      user: $('#user').value.trim(),
+      pass: $('#pass').value.trim(),
+      hls: $('#hls').checked
+    };
+    if (type === 'm3u' && !/^https?:\/\//i.test(body.url)) { alert('Cole o link da lista (começa com http).'); return; }
+    if (type === 'xtream' && !(body.server && body.user && body.pass)) { alert('Preencha servidor, usuário e senha.'); return; }
+    await act('/api/lists', body);
+    for (const id of ['lname', 'url', 'server', 'user', 'pass']) $('#' + id).value = '';
+    $('#hls').checked = false;
+  };
+
+  // ---------- meus canais ----------
+  function numRow(name, group, number) {
+    const inp = h('input', { type: 'number', inputmode: 'numeric', min: '1', max: '999', placeholder: 'nº', value: number ? String(number) : '' });
+    return h('div', { class: 'chan' },
+      h('div', { class: 'cname' }, name, group ? h('small', {}, group) : null),
+      h('div', { class: 'row' }, inp,
+        h('button', { class: 'main', onclick: () => setNum(name, inp.value) }, 'Salvar'),
+        number ? h('button', { class: 'danger', onclick: () => setNum(name, '') }, 'Tirar') : null));
+  }
+
+  function renderFavs() {
+    const box = $('#favs');
+    box.textContent = '';
+    if (!state.favorites.length) {
+      box.append(h('p', {}, 'Nenhum canal escolhido ainda. Enquanto isso, os canais usam a numeração automática (1, 2, 3…), na ordem da lista.'));
+      return;
+    }
+    box.append(h('h3', { style: 'margin:0 0 4px' }, 'Canais escolhidos (' + state.favorites.length + ')'));
+    for (const f of state.favorites) box.append(numRow(f.name, '', f.number));
+  }
+
+  async function setNum(name, v) {
+    const n = parseInt(v || '0', 10) || 0;
+    try {
+      await api('/api/number', { name: name, number: n });
+      await loadState();
+      if ($('#q').value.trim()) search();
+    } catch (e) { fail(e); }
+  }
+
+  let st;
+  $('#q').oninput = () => { clearTimeout(st); st = setTimeout(search, 300); };
+
+  async function search() {
+    const q = $('#q').value.trim();
+    const box = $('#results');
+    box.textContent = '';
+    if (!q) return;
+    try {
+      const r = await api('/api/channels?q=' + encodeURIComponent(q));
+      if (!r.length) box.append(h('p', {}, 'Nenhum canal encontrado. Se acabou de adicionar a lista, espere terminar de baixar.'));
+      for (const c of r) box.append(numRow(c.name, c.group, c.number));
+    } catch (e) { fail(e); }
+  }
+
+  // ---------- entrada ----------
+  async function enter() {
+    try { await loadState(); } catch (e) {
+      if (e.message === 'auth') showLogin(PIN ? 'Código incorreto. Veja o código na TV.' : '');
+      else showLogin('Não consegui falar com a TV. Abra "Configurar listas" na TV.');
+    }
+  }
+
+  $('#btnLogin').onclick = () => {
+    PIN = $('#pin').value.trim();
+    sessionStorage.setItem('pin', PIN);
+    enter();
+  };
+  $('#pin').onkeydown = ev => { if (ev.key === 'Enter') $('#btnLogin').click(); };
+
+  if (PIN) enter(); else showLogin('');
+})();
+</script>
+</body>
+</html>

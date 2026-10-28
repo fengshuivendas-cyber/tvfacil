@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true">
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="false"
+        app:resize_mode="fit"
+        app:show_buffering="never"
+        app:use_controller="false" />
+
+    <!-- Número que está sendo digitado (canto superior direito) -->
+    <TextView
+        android:id="@+id/typed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="48dp"
+        android:background="@drawable/bg_overlay"
+        android:paddingStart="36dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="36dp"
+        android:paddingBottom="12dp"
+        android:textColor="#FFFFFF"
+        android:textSize="80sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <!-- Faixa com número e nome do canal (canto inferior esquerdo) -->
+    <LinearLayout
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="48dp"
+        android:background="@drawable/bg_overlay"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/infoNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:textColor="#FFC107"
+            android:textSize="64sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/infoName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:maxWidth="700dp"
+            android:textColor="#FFFFFF"
+            android:textSize="44sp" />
+    </LinearLayout>
+
+    <!-- Mensagens grandes no centro (carregando, sem sinal, etc.) -->
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="96dp"
+        android:layout_marginEnd="96dp"
+        android:background="@drawable/bg_overlay"
+        android:gravity="center"
+        android:padding="32dp"
+        android:textColor="#FFFFFF"
+        android:textSize="38sp"
+        android:visibility="gone" />
+</FrameLayout>
